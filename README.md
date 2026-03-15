@@ -80,5 +80,5 @@ This dataset is released under [CC BY 4.0](https://creativecommons.org/licenses/
 
 ## Contact
 
-Zhuanghua Shi — strongway@gmail.com
+Zhuanghua Shi — shi@lmu.de
 Department of Psychology, LMU Munich
