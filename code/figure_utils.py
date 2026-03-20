@@ -13,8 +13,8 @@ PUBLICATION_STYLE = {
     'font.size': 16,
     'axes.labelsize': 18,
     'axes.titlesize': 20,
-    'xtick.labelsize': 14,
-    'ytick.labelsize': 14,
+    'xtick.labelsize': 18,
+    'ytick.labelsize': 18,
     'legend.fontsize': 14,
     'figure.titlesize': 20,
     'figure.dpi': 100,
@@ -53,10 +53,11 @@ COLORBLIND_PALETTE = ['#0173B2', '#DE8F05', '#029E73', '#CC78BC',
 
 def setup_publication_style():
     """Apply publication-quality matplotlib settings."""
-    for key, value in PUBLICATION_STYLE.items():
-        rcParams[key] = value
     sns.set_style('ticks')
     sns.set_context('paper')  # or 'notebook' for larger text
+    # Apply our overrides AFTER seaborn to avoid being reset
+    for key, value in PUBLICATION_STYLE.items():
+        rcParams[key] = value
 
 
 def save_figure(fig, filepath, formats=['png', 'pdf']):
