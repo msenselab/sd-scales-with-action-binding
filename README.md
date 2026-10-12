@@ -24,7 +24,7 @@ Serial dependence is therefore gated by action binding: whether the previous int
 ├── data/
 │   └── dataAll.csv                     # Trial-level data, all 24 participants
 ├── code/
-│   ├── run_analyses.py                 # Reproduces all statistics, Figures 2–4, Tables S1–S3 and Figure S1
+│   ├── run_analyses.py                 # Reproduces all statistics, Figures 2–3, Tables S1–S3 and Figure S1
 │   ├── analysis_utils.py               # Data processing utilities (used by both analyses)
 │   ├── analysis.ipynb                  # Analyses of the originally submitted manuscript
 │   ├── figure_utils.py                 # Plotting functions (notebook)
@@ -34,9 +34,8 @@ Serial dependence is therefore gated by action binding: whether the previous int
 │   └── *.csv                           # Participant-level indices
 └── figures/
     ├── illustration.pdf/.png           # Figure 1: experimental paradigm
-    ├── fig2_sequential_dependence.pdf/.png  # Figure 2: bias vs relative previous duration
-    ├── fig3_sdi_by_transition.pdf/.png      # Figure 3: SDI by transition
-    ├── fig4_central_tendency.pdf/.png       # Figure 4: central tendency and following-task latencies
+    ├── fig2_sequential_dependence.pdf/.png  # Figure 2: bias vs relative previous duration and SDI, by current task
+    ├── fig3_central_tendency.pdf/.png       # Figure 3: central tendency and following-task latencies
     ├── figS1_central_tendency_by_transition.pdf/.png  # Supplementary Figure S1
     └── (other files)                   # Figures of the originally submitted manuscript (notebook)
 ```
@@ -44,7 +43,7 @@ Serial dependence is therefore gated by action binding: whether the previous int
 | Manuscript item | Source |
 |---|---|
 | Figure 1 | `figures/illustration.*` |
-| Figures 2–4; Supplementary Figure S1 | `figures/fig2_*`, `fig3_*`, `fig4_*`, `figS1_*` (from `run_analyses.py`) |
+| Figures 2–3; Supplementary Figure S1 | `figures/fig2_*`, `fig3_*`, `figS1_*` (from `run_analyses.py`) |
 | All statistics in the text; Supplementary Tables S1–S3 | `results/results.md` (from `run_analyses.py`) |
 
 ## Data Dictionary (dataAll.csv)
@@ -94,7 +93,7 @@ For example: `pip install pandas numpy scipy statsmodels pingouin matplotlib sea
 python code/run_analyses.py
 ```
 
-This writes all statistics to `results/results.md` (and `results.json`, plus participant-level CSV files) and Figures 2–4 to `figures/`. Sequential dependence is estimated per participant from the joint model *B*<sub>n</sub> ~ *T*<sub>n</sub> + *T*<sub>n−1</sub>; the simple-slope specification without *T*<sub>n</sub> is reported for comparison (Table S1).
+This writes all statistics to `results/results.md` (and `results.json`, plus participant-level CSV files) and Figures 2–3 and S1 to `figures/`. Sequential dependence is estimated per participant from the joint model *B*<sub>n</sub> ~ *T*<sub>n</sub> + *T*<sub>n−1</sub>; the simple-slope specification without *T*<sub>n</sub> is reported for comparison (Table S1).
 
 `code/analysis.ipynb` reproduces the analyses and figures of the originally submitted manuscript and is kept for transparency.
 
