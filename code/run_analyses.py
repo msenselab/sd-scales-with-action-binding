@@ -1,7 +1,7 @@
 """Analyses for "Action Binding Gates Serial Dependence in Duration Perception".
 
 Reproduces every statistic and Figures 2-4 of the manuscript and the
-Supplementary Tables S1-S4 from the trial-level data in ../data/dataAll.csv:
+Supplementary Tables S1-S3 and Figure S1 from the trial-level data in ../data/dataAll.csv:
   - central tendency (signed slope, duration centred at 1.1 s) and the
     following-task onset/offset latencies;
   - sequential dependence index (SDI) from the joint model
@@ -376,6 +376,29 @@ ax.text(2.5, ax.get_ylim()[1] * 0.95, "current: following", ha="center", fontsiz
 sns.despine(fig)
 fig.tight_layout()
 fig.savefig(FIG / "fig4_sdi_by_transition.png"); fig.savefig(FIG / "fig4_sdi_by_transition.pdf")
+plt.close(fig)
+
+# Figure S1 — central tendency index by transition (bars + participants)
+from matplotlib.patches import Patch  # noqa: E402
+fig, ax = plt.subplots(figsize=(5, 4))
+m = cti_tr.groupby("transition")["cti"].agg(["mean", "sem"]).reindex(order)
+ax.bar(order, m["mean"], yerr=m["sem"], color=cols, alpha=0.85, capsize=3, edgecolor="black", lw=0.6)
+rng = np.random.default_rng(2)
+for i, tr in enumerate(order):
+    y = cti_tr.query("transition == @tr")["cti"]
+    ax.scatter(i + rng.uniform(-0.18, 0.18, len(y)), y, color="black", s=10, alpha=0.5, zorder=3)
+ax.axhline(0, color="grey", ls=":", lw=1)
+ax.set_ylim(top=0.2)
+ax.set(ylabel="Central tendency index\n(slope on current duration, s/s)", xlabel="Transition (previous → current)")
+ax.axvline(1.5, color="lightgrey", lw=1)
+ax.text(0.5, 0.1, "current: reproduction", ha="center", fontsize=10)
+ax.text(2.5, 0.1, "current: following", ha="center", fontsize=10)
+ax.legend(handles=[Patch(facecolor=SWITCH_COL["repeat"], alpha=0.85, label="task repeat"),
+                   Patch(facecolor=SWITCH_COL["switch"], alpha=0.85, label="task switch")],
+          loc="lower right", frameon=False)
+sns.despine(fig)
+fig.tight_layout()
+fig.savefig(FIG / "figS1_central_tendency_by_transition.png"); fig.savefig(FIG / "figS1_central_tendency_by_transition.pdf")
 plt.close(fig)
 
 # --------------------------------------------------------------------------

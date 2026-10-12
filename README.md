@@ -24,7 +24,7 @@ Serial dependence is therefore gated by action binding: whether the previous int
 ├── data/
 │   └── dataAll.csv                     # Trial-level data, all 24 participants
 ├── code/
-│   ├── run_analyses.py                 # Reproduces all statistics, Figures 2–4 and Tables S1–S4
+│   ├── run_analyses.py                 # Reproduces all statistics, Figures 2–4, Tables S1–S3 and Figure S1
 │   ├── analysis_utils.py               # Data processing utilities (used by both analyses)
 │   ├── analysis.ipynb                  # Analyses of the originally submitted manuscript
 │   ├── figure_utils.py                 # Plotting functions (notebook)
@@ -37,14 +37,15 @@ Serial dependence is therefore gated by action binding: whether the previous int
     ├── fig2_central_tendency.pdf/.png  # Figure 2: central tendency and following-task latencies
     ├── fig3_sequential_dependence.pdf/.png  # Figure 3: bias vs relative previous duration
     ├── fig4_sdi_by_transition.pdf/.png      # Figure 4: SDI by transition
+    ├── figS1_central_tendency_by_transition.pdf/.png  # Supplementary Figure S1
     └── (other files)                   # Figures of the originally submitted manuscript (notebook)
 ```
 
 | Manuscript item | Source |
 |---|---|
 | Figure 1 | `figures/illustration.*` |
-| Figures 2–4 | `figures/fig2_*`, `fig3_*`, `fig4_*` (from `run_analyses.py`) |
-| All statistics in the text; Supplementary Tables S1–S4 | `results/results.md` (from `run_analyses.py`) |
+| Figures 2–4; Supplementary Figure S1 | `figures/fig2_*`, `fig3_*`, `fig4_*`, `figS1_*` (from `run_analyses.py`) |
+| All statistics in the text; Supplementary Tables S1–S3 | `results/results.md` (from `run_analyses.py`) |
 
 ## Data Dictionary (dataAll.csv)
 
