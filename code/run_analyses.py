@@ -297,21 +297,28 @@ for task in ["reproduction", "following"]:
 sns.set_style("ticks")
 plt.rcParams.update({"font.family": "sans-serif", "font.size": 12, "axes.labelsize": 13, "axes.titlesize": 14,
                      "legend.fontsize": 11, "savefig.dpi": 300, "savefig.bbox": "tight"})
-TASK_COL = {"reproduction": "#C0392B", "following": "#2471A3"}          # red / blue (panel A)
-LAT_COL = {"Onset latency": "#7F8C8D", "Offset latency": "#F39C12"}     # grey / amber (panel B)
-SWITCH_COL = {"repeat": "#1B7837", "switch": "#762A83"}                 # green / purple (Fig 3, 4)
+# Okabe-Ito / Wong (2011) colours; pairs differ in lightness so they survive greyscale, plus a redundant cue
+TASK_COL = {"reproduction": "#0072B2", "following": "#E69F00"}          # blue / orange (Fig 2A)
+LAT_COL = {"Onset latency": "#000000", "Offset latency": "#CC79A7"}     # black / reddish purple (Fig 2B)
+SWITCH_COL = {"repeat": "#555555", "switch": "#AAAAAA"}                 # dark / light grey (Fig 3, 4, S1)
+# marker, filled, line style per level
+STYLE = {"reproduction": ("o", True, "-"), "following": ("s", True, "--"),
+         "Onset latency": ("o", True, "-"), "Offset latency": ("^", True, "--"),
+         "repeat": ("o", True, "-"), "switch": ("o", False, "--")}
 
 
 def points_and_fit(ax, data, x, y, hue, palette, xs=None):
     for lvl, col in palette.items():
         d = data[data[hue] == lvl]
         agg = d.groupby(x)[y].agg(["mean", "sem"]).reset_index()
-        ax.errorbar(agg[x], agg["mean"], yerr=agg["sem"], fmt="o", color=col, ms=6, capsize=2, lw=1.4, label=lvl, zorder=3)
+        mk, filled, ls = STYLE[lvl]
+        ax.errorbar(agg[x], agg["mean"], yerr=agg["sem"], fmt=mk, color=col, mfc=col if filled else "white", mec=col,
+                    mew=1.4, ms=6, capsize=2, lw=1.4, label=lvl, zorder=3)
         # fit on participant-level means so the line matches the participant-level slope
         per = d.groupby(["nPar", x])[y].mean().reset_index()
         b = np.polyfit(per[x], per[y], 1)
         gx = np.linspace(per[x].min(), per[x].max(), 50) if xs is None else xs
-        ax.plot(gx, np.polyval(b, gx), "--", color=col, lw=1.6, alpha=0.9, zorder=2)
+        ax.plot(gx, np.polyval(b, gx), ls, color=col, lw=1.6, alpha=0.9, zorder=2)
 
 
 # Figure 2 — distinct palettes for A and B
@@ -363,11 +370,11 @@ fig, ax = plt.subplots(figsize=(5, 4))
 order = ["RR", "FR", "FF", "RF"]
 m = adj.groupby("transition")["sdi_adj"].agg(["mean", "sem"]).reindex(order)
 cols = [SWITCH_COL["repeat"], SWITCH_COL["switch"], SWITCH_COL["repeat"], SWITCH_COL["switch"]]
-ax.bar(order, m["mean"], yerr=m["sem"], color=cols, alpha=0.85, capsize=3, edgecolor="black", lw=0.6)
+ax.bar(order, m["mean"], yerr=m["sem"], color=cols, capsize=3, edgecolor="black", lw=0.6)
 rng = np.random.default_rng(1)
 for i, tr in enumerate(order):
     y = adj.query("transition == @tr")["sdi_adj"]
-    ax.scatter(i + rng.uniform(-0.18, 0.18, len(y)), y, color="black", s=10, alpha=0.5, zorder=3)
+    ax.scatter(i + rng.uniform(-0.18, 0.18, len(y)), y, facecolor="white", edgecolor="black", s=12, lw=0.6, alpha=0.9, zorder=3)
 ax.axhline(0, color="grey", ls=":", lw=1)
 ax.set(ylabel="Sequential dependence index\n(slope on previous duration, s/s)", xlabel="Transition (previous → current)")
 ax.axvline(1.5, color="lightgrey", lw=1)
@@ -382,19 +389,19 @@ plt.close(fig)
 from matplotlib.patches import Patch  # noqa: E402
 fig, ax = plt.subplots(figsize=(5, 4))
 m = cti_tr.groupby("transition")["cti"].agg(["mean", "sem"]).reindex(order)
-ax.bar(order, m["mean"], yerr=m["sem"], color=cols, alpha=0.85, capsize=3, edgecolor="black", lw=0.6)
+ax.bar(order, m["mean"], yerr=m["sem"], color=cols, capsize=3, edgecolor="black", lw=0.6)
 rng = np.random.default_rng(2)
 for i, tr in enumerate(order):
     y = cti_tr.query("transition == @tr")["cti"]
-    ax.scatter(i + rng.uniform(-0.18, 0.18, len(y)), y, color="black", s=10, alpha=0.5, zorder=3)
+    ax.scatter(i + rng.uniform(-0.18, 0.18, len(y)), y, facecolor="white", edgecolor="black", s=12, lw=0.6, alpha=0.9, zorder=3)
 ax.axhline(0, color="grey", ls=":", lw=1)
 ax.set_ylim(top=0.2)
 ax.set(ylabel="Central tendency index\n(slope on current duration, s/s)", xlabel="Transition (previous → current)")
 ax.axvline(1.5, color="lightgrey", lw=1)
 ax.text(0.5, 0.1, "current: reproduction", ha="center", fontsize=10)
 ax.text(2.5, 0.1, "current: following", ha="center", fontsize=10)
-ax.legend(handles=[Patch(facecolor=SWITCH_COL["repeat"], alpha=0.85, label="task repeat"),
-                   Patch(facecolor=SWITCH_COL["switch"], alpha=0.85, label="task switch")],
+ax.legend(handles=[Patch(facecolor=SWITCH_COL["repeat"], edgecolor="black", lw=0.6, label="task repeat"),
+                   Patch(facecolor=SWITCH_COL["switch"], edgecolor="black", lw=0.6, label="task switch")],
           loc="lower right", frameon=False)
 sns.despine(fig)
 fig.tight_layout()
