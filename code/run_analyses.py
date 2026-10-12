@@ -1,7 +1,7 @@
 """Analyses for "Action Binding Gates Serial Dependence in Duration Perception".
 
 Reproduces every statistic and Figures 2-4 of the manuscript and the
-Supplementary Tables S1-S6 from the trial-level data in ../data/dataAll.csv:
+Supplementary Tables S1-S4 from the trial-level data in ../data/dataAll.csv:
   - central tendency (signed slope, duration centred at 1.1 s) and the
     following-task onset/offset latencies;
   - sequential dependence index (SDI) from the joint model

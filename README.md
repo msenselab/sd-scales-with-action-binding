@@ -24,7 +24,7 @@ Serial dependence is therefore gated by action binding: whether the previous int
 ├── data/
 │   └── dataAll.csv                     # Trial-level data, all 24 participants
 ├── code/
-│   ├── run_analyses.py                 # Reproduces all statistics, Figures 2–4 and Tables S1–S6
+│   ├── run_analyses.py                 # Reproduces all statistics, Figures 2–4 and Tables S1–S4
 │   ├── analysis_utils.py               # Data processing utilities (used by both analyses)
 │   ├── analysis.ipynb                  # Analyses of the originally submitted manuscript
 │   ├── figure_utils.py                 # Plotting functions (notebook)
@@ -44,7 +44,7 @@ Serial dependence is therefore gated by action binding: whether the previous int
 |---|---|
 | Figure 1 | `figures/illustration.*` |
 | Figures 2–4 | `figures/fig2_*`, `fig3_*`, `fig4_*` (from `run_analyses.py`) |
-| All statistics in the text; Supplementary Tables S1–S6 | `results/results.md` (from `run_analyses.py`) |
+| All statistics in the text; Supplementary Tables S1–S4 | `results/results.md` (from `run_analyses.py`) |
 
 ## Data Dictionary (dataAll.csv)
 
