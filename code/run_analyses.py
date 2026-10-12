@@ -307,10 +307,10 @@ MM = 1 / 25.4
 FULL_W, HALF_W = 174 * MM, 84 * MM
 # Greyscale scheme: two shades that differ clearly in lightness, plus marker, fill and line style
 DARK, LIGHT = "#444444", "#A0A0A0"
-TASK_COL = {"reproduction": DARK, "following": LIGHT}                   # Fig 2A
-LAT_COL = {"Onset latency": DARK, "Offset latency": LIGHT}              # Fig 2B
-SWITCH_COL = {"repeat": DARK, "switch": LIGHT}                          # Fig 3, 4, S1
-# marker, filled, line style per level (Fig 2A filled markers; Fig 2B open markers)
+TASK_COL = {"reproduction": DARK, "following": LIGHT}                   # Fig 4A
+LAT_COL = {"Onset latency": DARK, "Offset latency": LIGHT}              # Fig 4B
+SWITCH_COL = {"repeat": DARK, "switch": LIGHT}                          # Fig 2, 3, S1
+# marker, filled, line style per level (Fig 4A filled markers; Fig 4B open markers)
 STYLE = {"reproduction": ("o", True, "-"), "following": ("s", True, "--"),
          "Onset latency": ("o", False, "-"), "Offset latency": ("^", False, "--"),
          "repeat": ("o", True, "-"), "switch": ("o", False, "--")}
@@ -330,7 +330,7 @@ def points_and_fit(ax, data, x, y, hue, palette, xs=None):
         ax.plot(gx, np.polyval(b, gx), ls, color=col, lw=1.1, alpha=0.9, zorder=2)
 
 
-# Figure 2 — distinct palettes for A and B
+# Figure 4 — distinct palettes for A and B
 fig, (a1, a2) = plt.subplots(1, 2, figsize=(FULL_W, 2.8))
 pa = df_valid.groupby(["nPar", "curTask", "curDur"], as_index=False)["bias"].mean()
 points_and_fit(a1, pa, "curDur", "bias", "curTask", TASK_COL)
@@ -347,10 +347,10 @@ for ax, lab in zip((a1, a2), "AB"):
     ax.text(-0.14, 1.04, lab, transform=ax.transAxes, fontsize=FONT_PT + 2, fontweight="bold")
 sns.despine(fig)
 fig.tight_layout()
-fig.savefig(FIG / "fig2_central_tendency.png"); fig.savefig(FIG / "fig2_central_tendency.pdf")
+fig.savefig(FIG / "fig4_central_tendency.png"); fig.savefig(FIG / "fig4_central_tendency.pdf")
 plt.close(fig)
 
-# Figure 3 — bias adjusted for central tendency vs relative previous duration
+# Figure 2 — bias adjusted for central tendency vs relative previous duration
 # adjusted bias = bias − participant/transition CTI slope × (T_n − 1.1) − intercept  (removes the central-tendency component)
 adj_lookup = adj.set_index(["nPar", "transition"])
 df_seq["bias_adj"] = df_seq.apply(lambda r: r["bias"] - adj_lookup.loc[(r["nPar"], r["transition"]), "cti_adj"] * r["curDur_c"]
@@ -371,10 +371,10 @@ for ax, lab in zip(axes, "AB"):
     ax.text(-0.12, 1.04, lab, transform=ax.transAxes, fontsize=FONT_PT + 2, fontweight="bold")
 sns.despine(fig)
 fig.tight_layout()
-fig.savefig(FIG / "fig3_sequential_dependence.png"); fig.savefig(FIG / "fig3_sequential_dependence.pdf")
+fig.savefig(FIG / "fig2_sequential_dependence.png"); fig.savefig(FIG / "fig2_sequential_dependence.pdf")
 plt.close(fig)
 
-# Figure 4 — adjusted SDI by transition (bars + participants)
+# Figure 3 — adjusted SDI by transition (bars + participants)
 fig, ax = plt.subplots(figsize=(HALF_W, 2.8))
 order = ["RR", "FR", "FF", "RF"]
 m = adj.groupby("transition")["sdi_adj"].agg(["mean", "sem"]).reindex(order)
@@ -392,7 +392,7 @@ ax.text(0.5, hi + 0.06 * (hi - lo), "Reproduction", ha="center", fontsize=FONT_P
 ax.text(2.5, hi + 0.06 * (hi - lo), "Following", ha="center", fontsize=FONT_PT)
 sns.despine(fig)
 fig.tight_layout()
-fig.savefig(FIG / "fig4_sdi_by_transition.png"); fig.savefig(FIG / "fig4_sdi_by_transition.pdf")
+fig.savefig(FIG / "fig3_sdi_by_transition.png"); fig.savefig(FIG / "fig3_sdi_by_transition.pdf")
 plt.close(fig)
 
 # Figure S1 — central tendency index by transition (bars + participants)

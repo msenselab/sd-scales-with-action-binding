@@ -34,9 +34,9 @@ Serial dependence is therefore gated by action binding: whether the previous int
 │   └── *.csv                           # Participant-level indices
 └── figures/
     ├── illustration.pdf/.png           # Figure 1: experimental paradigm
-    ├── fig2_central_tendency.pdf/.png  # Figure 2: central tendency and following-task latencies
-    ├── fig3_sequential_dependence.pdf/.png  # Figure 3: bias vs relative previous duration
-    ├── fig4_sdi_by_transition.pdf/.png      # Figure 4: SDI by transition
+    ├── fig2_sequential_dependence.pdf/.png  # Figure 2: bias vs relative previous duration
+    ├── fig3_sdi_by_transition.pdf/.png      # Figure 3: SDI by transition
+    ├── fig4_central_tendency.pdf/.png       # Figure 4: central tendency and following-task latencies
     ├── figS1_central_tendency_by_transition.pdf/.png  # Supplementary Figure S1
     └── (other files)                   # Figures of the originally submitted manuscript (notebook)
 ```
