@@ -316,7 +316,7 @@ STYLE = {"reproduction": ("o", True, "-"), "following": ("s", True, "--"),
          "repeat": ("o", True, "-"), "switch": ("o", False, "--")}
 
 
-def points_and_fit(ax, data, x, y, hue, palette, xs=None):
+def points_and_fit(ax, data, x, y, hue, palette, xs=None, slopes=None):
     for lvl, col in palette.items():
         d = data[data[hue] == lvl]
         agg = d.groupby(x)[y].agg(["mean", "sem"]).reset_index()
@@ -326,6 +326,8 @@ def points_and_fit(ax, data, x, y, hue, palette, xs=None):
         # fit on participant-level means so the line matches the participant-level slope
         per = d.groupby(["nPar", x])[y].mean().reset_index()
         b = np.polyfit(per[x], per[y], 1)
+        if slopes is not None:   # draw the reported (participant-mean) slope through the data
+            b = np.array([slopes[lvl], (per[y] - slopes[lvl] * per[x]).mean()])
         gx = np.linspace(per[x].min(), per[x].max(), 50) if xs is None else xs
         ax.plot(gx, np.polyval(b, gx), ls, color=col, lw=1.1, alpha=0.9, zorder=2)
 
@@ -354,7 +356,10 @@ plt.close(fig)
 # left: bias adjusted for central tendency vs relative previous duration; right: SDI per transition (3:2 widths)
 # adjusted bias = bias − participant/transition CTI slope × (T_n − 1.1) − intercept  (removes the central-tendency component)
 adj_lookup = adj.set_index(["nPar", "transition"])
-df_seq["bias_adj"] = df_seq.apply(lambda r: r["bias"] - adj_lookup.loc[(r["nPar"], r["transition"]), "cti_adj"] * r["curDur_c"]
+# joint model: bias = c + b*T_n + d*T_{n-1} = c + (b + d)*T_n + d*(T_{n-1} - T_n), so removing c + (b + d)*T_n
+# leaves d*(relative previous duration): the plotted slope equals the reported SDI
+df_seq["bias_adj"] = df_seq.apply(lambda r: r["bias"] - (adj_lookup.loc[(r["nPar"], r["transition"]), "cti_adj"]
+                                                         + adj_lookup.loc[(r["nPar"], r["transition"]), "sdi_adj"]) * r["curDur_c"]
                                   - adj_lookup.loc[(r["nPar"], r["transition"]), "Intercept"], axis=1)
 df_seq["relPre_r"] = df_seq["relPre"].round(1)
 order = ["RR", "FR", "FF", "RF"]
@@ -367,7 +372,9 @@ for r, (task, pair, labels) in enumerate(rows):
     ax, bx = axes[r]
     d = df_seq[df_seq.curTask == task]
     pa = d.groupby(["nPar", "taskSwitch", "relPre_r"], as_index=False)["bias_adj"].mean()
-    points_and_fit(ax, pa, "relPre_r", "bias_adj", "taskSwitch", SWITCH_COL, xs=np.linspace(-0.6, 0.6, 50))
+    sdi_mean = adj.groupby("transition")["sdi_adj"].mean()
+    points_and_fit(ax, pa, "relPre_r", "bias_adj", "taskSwitch", SWITCH_COL, xs=np.linspace(-0.6, 0.6, 50),
+                   slopes={"repeat": sdi_mean[pair[0]], "switch": sdi_mean[pair[1]]})
     ax.axhline(0, color="grey", ls=":", lw=0.7); ax.axvline(0, color="grey", ls=":", lw=0.7)
     ax.set(ylabel="Adjusted bias (s)", title=task.capitalize())
     h, l = ax.get_legend_handles_labels(); ax.legend(h, [labels[x] for x in l], frameon=False, loc="upper left")
