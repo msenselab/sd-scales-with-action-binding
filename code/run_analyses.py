@@ -295,15 +295,24 @@ for task in ["reproduction", "following"]:
 # Figures
 # --------------------------------------------------------------------------
 sns.set_style("ticks")
-plt.rcParams.update({"font.family": "sans-serif", "font.size": 12, "axes.labelsize": 13, "axes.titlesize": 14,
-                     "legend.fontsize": 11, "savefig.dpi": 300, "savefig.bbox": "tight"})
-# Okabe-Ito / Wong (2011) colours; pairs differ in lightness so they survive greyscale, plus a redundant cue
-TASK_COL = {"reproduction": "#0072B2", "following": "#E69F00"}          # blue / orange (Fig 2A)
-LAT_COL = {"Onset latency": "#000000", "Offset latency": "#CC79A7"}     # black / reddish purple (Fig 2B)
-SWITCH_COL = {"repeat": "#555555", "switch": "#AAAAAA"}                 # dark / light grey (Fig 3, 4, S1)
-# marker, filled, line style per level
+# Figures are drawn at Springer print widths (double column 174 mm, single column 84 mm) and saved without
+# cropping, so every figure is printed at 100% and all text is 8 pt
+FONT_PT = 8
+plt.rcParams.update({"font.family": "sans-serif", "font.size": FONT_PT, "axes.labelsize": FONT_PT, "axes.titlesize": FONT_PT,
+                     "legend.fontsize": FONT_PT, "xtick.labelsize": FONT_PT, "ytick.labelsize": FONT_PT,
+                     "axes.linewidth": 0.6, "xtick.major.width": 0.6, "ytick.major.width": 0.6,
+                     "xtick.major.size": 3, "ytick.major.size": 3, "legend.handlelength": 1.6,
+                     "savefig.dpi": 300, "savefig.bbox": None})
+MM = 1 / 25.4
+FULL_W, HALF_W = 174 * MM, 84 * MM
+# Greyscale scheme: two shades that differ clearly in lightness, plus marker, fill and line style
+DARK, LIGHT = "#444444", "#A0A0A0"
+TASK_COL = {"reproduction": DARK, "following": LIGHT}                   # Fig 2A
+LAT_COL = {"Onset latency": DARK, "Offset latency": LIGHT}              # Fig 2B
+SWITCH_COL = {"repeat": DARK, "switch": LIGHT}                          # Fig 3, 4, S1
+# marker, filled, line style per level (Fig 2A filled markers; Fig 2B open markers)
 STYLE = {"reproduction": ("o", True, "-"), "following": ("s", True, "--"),
-         "Onset latency": ("o", True, "-"), "Offset latency": ("^", True, "--"),
+         "Onset latency": ("o", False, "-"), "Offset latency": ("^", False, "--"),
          "repeat": ("o", True, "-"), "switch": ("o", False, "--")}
 
 
@@ -313,29 +322,29 @@ def points_and_fit(ax, data, x, y, hue, palette, xs=None):
         agg = d.groupby(x)[y].agg(["mean", "sem"]).reset_index()
         mk, filled, ls = STYLE[lvl]
         ax.errorbar(agg[x], agg["mean"], yerr=agg["sem"], fmt=mk, color=col, mfc=col if filled else "white", mec=col,
-                    mew=1.4, ms=6, capsize=2, lw=1.4, label=lvl, zorder=3)
+                    mew=0.9, ms=4, capsize=1.5, lw=0.9, label=lvl, zorder=3)
         # fit on participant-level means so the line matches the participant-level slope
         per = d.groupby(["nPar", x])[y].mean().reset_index()
         b = np.polyfit(per[x], per[y], 1)
         gx = np.linspace(per[x].min(), per[x].max(), 50) if xs is None else xs
-        ax.plot(gx, np.polyval(b, gx), ls, color=col, lw=1.6, alpha=0.9, zorder=2)
+        ax.plot(gx, np.polyval(b, gx), ls, color=col, lw=1.1, alpha=0.9, zorder=2)
 
 
 # Figure 2 — distinct palettes for A and B
-fig, (a1, a2) = plt.subplots(1, 2, figsize=(10, 4.2))
+fig, (a1, a2) = plt.subplots(1, 2, figsize=(FULL_W, 2.8))
 pa = df_valid.groupby(["nPar", "curTask", "curDur"], as_index=False)["bias"].mean()
 points_and_fit(a1, pa, "curDur", "bias", "curTask", TASK_COL)
-a1.axhline(0, color="grey", ls=":", lw=1)
+a1.axhline(0, color="grey", ls=":", lw=0.7)
 a1.set(xlabel="Target duration (s)", ylabel="Response bias (s)", title="Central tendency", xlim=(0.75, 1.45))
 a1.legend(frameon=False)
 pl = (df_follow.groupby(["nPar", "curDur"], as_index=False).agg(onset=("flwOnLtc", "mean"), offset=("flwOffLtc", "mean"))
       .melt(id_vars=["nPar", "curDur"], var_name="lat", value_name="latency"))
 pl["lat"] = pl["lat"].map({"onset": "Onset latency", "offset": "Offset latency"})
 points_and_fit(a2, pl, "curDur", "latency", "lat", LAT_COL)
-a2.set(xlabel="Target duration (s)", ylabel="Latency (s)", title="Following-task latencies", xlim=(0.75, 1.45))
+a2.set(xlabel="Target duration (s)", ylabel="Latency (s)", title="Following latencies", xlim=(0.75, 1.45))
 a2.legend(frameon=False)
 for ax, lab in zip((a1, a2), "AB"):
-    ax.text(-0.14, 1.04, lab, transform=ax.transAxes, fontsize=15, fontweight="bold")
+    ax.text(-0.14, 1.04, lab, transform=ax.transAxes, fontsize=FONT_PT + 2, fontweight="bold")
 sns.despine(fig)
 fig.tight_layout()
 fig.savefig(FIG / "fig2_central_tendency.png"); fig.savefig(FIG / "fig2_central_tendency.pdf")
@@ -347,39 +356,40 @@ adj_lookup = adj.set_index(["nPar", "transition"])
 df_seq["bias_adj"] = df_seq.apply(lambda r: r["bias"] - adj_lookup.loc[(r["nPar"], r["transition"]), "cti_adj"] * r["curDur_c"]
                                   - adj_lookup.loc[(r["nPar"], r["transition"]), "Intercept"], axis=1)
 df_seq["relPre_r"] = df_seq["relPre"].round(1)
-fig, axes = plt.subplots(1, 2, figsize=(10, 4.2), sharey=True)
+fig, axes = plt.subplots(1, 2, figsize=(FULL_W, 2.8), sharey=True)
 for ax, task in zip(axes, ["reproduction", "following"]):
     d = df_seq[df_seq.curTask == task]
     pa = d.groupby(["nPar", "taskSwitch", "relPre_r"], as_index=False)["bias_adj"].mean()
     points_and_fit(ax, pa, "relPre_r", "bias_adj", "taskSwitch", SWITCH_COL, xs=np.linspace(-0.6, 0.6, 50))
-    ax.axhline(0, color="grey", ls=":", lw=1); ax.axvline(0, color="grey", ls=":", lw=1)
+    ax.axhline(0, color="grey", ls=":", lw=0.7); ax.axvline(0, color="grey", ls=":", lw=0.7)
     ax.set(xlabel="Previous − current duration (s)", title=task.capitalize())
     labels = {"reproduction": {"repeat": "RR (repeat)", "switch": "FR (switch)"},
               "following": {"repeat": "FF (repeat)", "switch": "RF (switch)"}}[task]
     h, l = ax.get_legend_handles_labels(); ax.legend(h, [labels[x] for x in l], frameon=False, loc="upper left")
 axes[0].set_ylabel("Bias adjusted for central tendency (s)")
 for ax, lab in zip(axes, "AB"):
-    ax.text(-0.12, 1.04, lab, transform=ax.transAxes, fontsize=15, fontweight="bold")
+    ax.text(-0.12, 1.04, lab, transform=ax.transAxes, fontsize=FONT_PT + 2, fontweight="bold")
 sns.despine(fig)
 fig.tight_layout()
 fig.savefig(FIG / "fig3_sequential_dependence.png"); fig.savefig(FIG / "fig3_sequential_dependence.pdf")
 plt.close(fig)
 
 # Figure 4 — adjusted SDI by transition (bars + participants)
-fig, ax = plt.subplots(figsize=(5, 4))
+fig, ax = plt.subplots(figsize=(HALF_W, 2.8))
 order = ["RR", "FR", "FF", "RF"]
 m = adj.groupby("transition")["sdi_adj"].agg(["mean", "sem"]).reindex(order)
 cols = [SWITCH_COL["repeat"], SWITCH_COL["switch"], SWITCH_COL["repeat"], SWITCH_COL["switch"]]
-ax.bar(order, m["mean"], yerr=m["sem"], color=cols, capsize=3, edgecolor="black", lw=0.6)
+ax.bar(order, m["mean"], yerr=m["sem"], color=cols, capsize=2, edgecolor="black", lw=0.5)
 rng = np.random.default_rng(1)
 for i, tr in enumerate(order):
     y = adj.query("transition == @tr")["sdi_adj"]
-    ax.scatter(i + rng.uniform(-0.18, 0.18, len(y)), y, facecolor="white", edgecolor="black", s=12, lw=0.6, alpha=0.9, zorder=3)
-ax.axhline(0, color="grey", ls=":", lw=1)
+    ax.scatter(i + rng.uniform(-0.18, 0.18, len(y)), y, facecolor="white", edgecolor="black", s=7, lw=0.4, alpha=0.9, zorder=3)
+ax.axhline(0, color="grey", ls=":", lw=0.7)
 ax.set(ylabel="Sequential dependence index\n(slope on previous duration, s/s)", xlabel="Transition (previous → current)")
-ax.axvline(1.5, color="lightgrey", lw=1)
-ax.text(0.5, ax.get_ylim()[1] * 0.95, "current: reproduction", ha="center", fontsize=10)
-ax.text(2.5, ax.get_ylim()[1] * 0.95, "current: following", ha="center", fontsize=10)
+ax.axvline(1.5, color="lightgrey", lw=0.7)
+lo, hi = ax.get_ylim(); ax.set_ylim(top=hi + 0.12 * (hi - lo))
+ax.text(0.5, hi + 0.06 * (hi - lo), "Reproduction", ha="center", fontsize=FONT_PT)
+ax.text(2.5, hi + 0.06 * (hi - lo), "Following", ha="center", fontsize=FONT_PT)
 sns.despine(fig)
 fig.tight_layout()
 fig.savefig(FIG / "fig4_sdi_by_transition.png"); fig.savefig(FIG / "fig4_sdi_by_transition.pdf")
@@ -387,21 +397,21 @@ plt.close(fig)
 
 # Figure S1 — central tendency index by transition (bars + participants)
 from matplotlib.patches import Patch  # noqa: E402
-fig, ax = plt.subplots(figsize=(5, 4))
+fig, ax = plt.subplots(figsize=(HALF_W, 2.8))
 m = cti_tr.groupby("transition")["cti"].agg(["mean", "sem"]).reindex(order)
-ax.bar(order, m["mean"], yerr=m["sem"], color=cols, capsize=3, edgecolor="black", lw=0.6)
+ax.bar(order, m["mean"], yerr=m["sem"], color=cols, capsize=2, edgecolor="black", lw=0.5)
 rng = np.random.default_rng(2)
 for i, tr in enumerate(order):
     y = cti_tr.query("transition == @tr")["cti"]
-    ax.scatter(i + rng.uniform(-0.18, 0.18, len(y)), y, facecolor="white", edgecolor="black", s=12, lw=0.6, alpha=0.9, zorder=3)
-ax.axhline(0, color="grey", ls=":", lw=1)
+    ax.scatter(i + rng.uniform(-0.18, 0.18, len(y)), y, facecolor="white", edgecolor="black", s=7, lw=0.4, alpha=0.9, zorder=3)
+ax.axhline(0, color="grey", ls=":", lw=0.7)
 ax.set_ylim(top=0.2)
 ax.set(ylabel="Central tendency index\n(slope on current duration, s/s)", xlabel="Transition (previous → current)")
-ax.axvline(1.5, color="lightgrey", lw=1)
-ax.text(0.5, 0.1, "current: reproduction", ha="center", fontsize=10)
-ax.text(2.5, 0.1, "current: following", ha="center", fontsize=10)
-ax.legend(handles=[Patch(facecolor=SWITCH_COL["repeat"], edgecolor="black", lw=0.6, label="task repeat"),
-                   Patch(facecolor=SWITCH_COL["switch"], edgecolor="black", lw=0.6, label="task switch")],
+ax.axvline(1.5, color="lightgrey", lw=0.7)
+ax.text(0.5, 0.1, "Reproduction", ha="center", fontsize=FONT_PT)
+ax.text(2.5, 0.1, "Following", ha="center", fontsize=FONT_PT)
+ax.legend(handles=[Patch(facecolor=SWITCH_COL["repeat"], edgecolor="black", lw=0.5, label="task repeat"),
+                   Patch(facecolor=SWITCH_COL["switch"], edgecolor="black", lw=0.5, label="task switch")],
           loc="lower right", frameon=False)
 sns.despine(fig)
 fig.tight_layout()
